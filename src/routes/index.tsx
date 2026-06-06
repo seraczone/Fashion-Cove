@@ -8,6 +8,7 @@ import perfumeHeroImg from "@/assets/perfumes/perfume-05.jpeg";
 import productVideo01 from "@/assets/videos/product-video-01.mp4";
 import productVideo02 from "@/assets/videos/product-video-02.mp4";
 import productVideo03 from "@/assets/videos/product-video-03.mp4";
+import productVideo04 from "@/assets/videos/product-video-04.mp4";
 import { categories, products } from "@/lib/shop-data";
 import { ProductCard } from "@/components/ProductCard";
 import { SectionHeading } from "@/components/SectionHeading";
@@ -138,37 +139,6 @@ function Home() {
         </div>
       </section>
 
-      {/* PRODUCT VIDEOS */}
-      <section className="container-luxe py-20 md:py-24">
-        <SectionHeading eyebrow="Product videos" title="See the details in motion" subtitle="Short product clips for texture, scale and finish before you order." />
-        <div className="mt-12 grid gap-6 md:grid-cols-3">
-          {[
-            { src: productVideo01, title: "Fresh arrivals" },
-            { src: productVideo02, title: "Fabric and finish" },
-            { src: productVideo03, title: "Product close-up" },
-          ].map((video, i) => (
-            <motion.figure
-              key={video.src}
-              initial={{ opacity: 0, y: 24, rotate: i === 0 ? -1.5 : i === 2 ? 1.5 : 0 }}
-              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
-              viewport={{ once: true, margin: "-80px" }}
-              transition={{ duration: 0.65, delay: i * 0.08 }}
-              className="overflow-hidden bg-secondary"
-            >
-              <video
-                src={video.src}
-                className="aspect-[4/5] w-full object-cover"
-                controls
-                muted
-                playsInline
-                preload="metadata"
-              />
-              <figcaption className="px-4 py-4 font-display text-lg">{video.title}</figcaption>
-            </motion.figure>
-          ))}
-        </div>
-      </section>
-
       {/* FEATURED CATEGORIES */}
       <section className="container-luxe py-20 md:py-28">
         <SectionHeading eyebrow="Collections" title="Shop by category" subtitle="From handwoven atamfa to whisper-light veils — each piece chosen with intention." />
@@ -242,6 +212,38 @@ function Home() {
               </div>
             ))}
           </div>
+        </div>
+      </section>
+
+      {/* PRODUCT VIDEOS */}
+      <section className="container-luxe py-20 md:py-24">
+        <SectionHeading eyebrow="Product videos" title="See the details in motion" subtitle="Short product clips for texture, scale and finish before you order." />
+        <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+          {[
+            { src: productVideo01, title: "Product showcase" },
+            { src: productVideo02, title: "Close-up details" },
+            { src: productVideo03, title: "New product clip" },
+            { src: productVideo04, title: "Style preview" },
+          ].map((video, i) => (
+            <motion.figure
+              key={video.src}
+              initial={{ opacity: 0, y: 24, rotate: i % 2 === 0 ? -1.5 : 1.5 }}
+              whileInView={{ opacity: 1, y: 0, rotate: 0 }}
+              viewport={{ once: true, margin: "-80px" }}
+              transition={{ duration: 0.65, delay: i * 0.08 }}
+              className="overflow-hidden bg-secondary"
+            >
+              <video
+                src={video.src}
+                className="aspect-[4/5] w-full object-cover"
+                controls
+                muted
+                playsInline
+                preload="metadata"
+              />
+              <figcaption className="px-4 py-4 font-display text-lg">{video.title}</figcaption>
+            </motion.figure>
+          ))}
         </div>
       </section>
 
