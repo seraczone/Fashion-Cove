@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { Instagram, Facebook, Mail, MapPin, Phone } from "lucide-react";
+import brandLogo from "@/assets/brand-logo.png";
 import { BRAND, CONTACT_EMAIL, PHONE_DISPLAY, STORE_ADDRESS } from "@/lib/shop-data";
 
 export function Footer() {
@@ -7,8 +8,14 @@ export function Footer() {
     <footer className="mt-24 border-t border-border bg-secondary/60">
       <div className="container-luxe py-16 grid gap-12 md:grid-cols-4">
         <div>
-          <h3 className="font-display text-2xl">The Fashion Cove</h3>
-          <div className="gold-underline mt-3" />
+          <img
+            src={brandLogo}
+            alt={BRAND}
+            className="h-28 w-auto md:h-36"
+            width={1024}
+            height={1024}
+          />
+          <div className="gold-underline mt-4" />
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
             A curated atelier of premium fabrics, intimates, accessories and signature scents — for the woman who chooses well.
           </p>

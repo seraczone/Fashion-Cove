@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
+import brandLogo from "@/assets/brand-logo.png";
 import { BRAND } from "@/lib/shop-data";
 import { useCartDetails } from "@/lib/cart-store";
 
@@ -18,14 +19,15 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border">
-      <div className="container-luxe flex items-center justify-between h-16 md:h-20">
-        <Link to="/" className="flex flex-col leading-none" onClick={() => setOpen(false)}>
-          <span className="font-display text-xl md:text-2xl tracking-tight text-foreground">
-            The Fashion <span className="text-primary">Cove</span>
-          </span>
-          <span className="text-[10px] uppercase tracking-[0.25em] text-muted-foreground mt-0.5">
-            Atelier of Luxury
-          </span>
+      <div className="container-luxe flex items-center justify-between h-20 md:h-24">
+        <Link to="/" className="flex items-center" onClick={() => setOpen(false)}>
+          <img
+            src={brandLogo}
+            alt={BRAND}
+            className="h-16 w-auto md:h-20"
+            width={1024}
+            height={1024}
+          />
         </Link>
 
         <nav className="hidden md:flex items-center gap-8">
