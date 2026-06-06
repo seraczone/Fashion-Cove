@@ -19,12 +19,12 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border">
-      <div className="container-luxe flex items-center justify-between h-20 md:h-24">
+      <div className="container-luxe flex items-center justify-between h-24 md:h-32">
         <Link to="/" className="flex items-center" onClick={() => setOpen(false)}>
           <img
             src={brandLogo}
             alt={BRAND}
-            className="h-16 w-auto md:h-20"
+            className="h-20 w-auto md:h-28"
             width={1024}
             height={1024}
           />
