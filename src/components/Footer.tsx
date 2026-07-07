@@ -11,6 +11,8 @@ export function Footer() {
           <img
             src={brandLogo}
             alt={BRAND}
+            loading="lazy"
+            decoding="async"
             className="h-28 w-auto md:h-36"
             width={1024}
             height={1024}
@@ -55,7 +57,7 @@ export function Footer() {
       <div className="border-t border-border">
         <div className="container-luxe py-6 flex flex-col md:flex-row items-center justify-between gap-3 text-xs text-muted-foreground">
           <span>© {new Date().getFullYear()} {BRAND}. All rights reserved.</span>
-          <span>Crafted with care.</span>
+          <span>Designed by Seraczone Technology Ltd.</span>
         </div>
       </div>
     </footer>

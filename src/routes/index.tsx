@@ -3,17 +3,21 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useEffect, useState } from "react";
 import { ArrowRight, Sparkles, Truck, ShieldCheck, Gem, Instagram } from "lucide-react";
 import heroImg from "@/assets/hero.jpg";
-import bagHeroImg from "@/assets/cat-bags.jpg";
-import perfumeHeroImg from "@/assets/perfumes/perfume-05.jpeg";
 import productVideo01 from "@/assets/videos/product-video-01.mp4";
 import productVideo02 from "@/assets/videos/product-video-02.mp4";
 import productVideo03 from "@/assets/videos/product-video-03.mp4";
 import productVideo04 from "@/assets/videos/product-video-04.mp4";
-import { categories, products } from "@/lib/shop-data";
+import type { Product } from "@/lib/shop-data";
+import { getStorefrontHome, storefrontKeys } from "@/lib/storefront-api";
 import { ProductCard } from "@/components/ProductCard";
 import { SectionHeading } from "@/components/SectionHeading";
 
 export const Route = createFileRoute("/")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: storefrontKeys.homepage,
+      queryFn: getStorefrontHome,
+    }),
   head: () => ({
     meta: [
       { title: "The Fashion Cove — Premium Fabrics, Bags, Shoes & Scents" },
@@ -26,8 +30,8 @@ export const Route = createFileRoute("/")({
   component: Home,
 });
 
-function categoryBalancedProducts(limit: number, highlight: "newArrival" | "bestseller") {
-  const selected: typeof products = [];
+function categoryBalancedProducts(products: Product[], categories: { slug: string }[], limit: number, highlight: "newArrival" | "bestseller") {
+  const selected: Product[] = [];
   const selectedIds = new Set<string>();
 
   for (const category of categories) {
@@ -61,13 +65,18 @@ function categoryBalancedProducts(limit: number, highlight: "newArrival" | "best
 }
 
 function Home() {
-  const newArrivals = categoryBalancedProducts(8, "newArrival");
-  const bestSellers = categoryBalancedProducts(12, "bestseller");
+  const { catalog, content } = Route.useLoaderData();
+  const { categories, products } = catalog;
+  const newArrivals = categoryBalancedProducts(products, categories, 8, "newArrival");
+  const bestSellers = categoryBalancedProducts(products, categories, 12, "bestseller");
+  const firstPerfume = products.find((product) => product.category === "perfumes")?.image;
+  const firstBag = products.find((product) => product.category === "bags")?.image;
   const heroSlides = [
+    content.hero.imageUrl ? { image: content.hero.imageUrl, alt: content.hero.title } : null,
     { image: heroImg, alt: "Model wearing a flowing atamfa gown" },
-    { image: perfumeHeroImg, alt: "Assorted perfume and body mist products" },
-    { image: bagHeroImg, alt: "Curated handbag collection" },
-  ];
+    firstPerfume ? { image: firstPerfume, alt: "Assorted perfume and body mist products" } : null,
+    firstBag ? { image: firstBag, alt: "Curated handbag collection" } : null,
+  ].filter((slide): slide is { image: string; alt: string } => Boolean(slide));
   const [heroIndex, setHeroIndex] = useState(0);
 
   useEffect(() => {
@@ -110,29 +119,28 @@ function Home() {
             transition={{ duration: 0.7 }}
             className="max-w-2xl"
           >
-            <p className="text-[11px] uppercase tracking-[0.3em] text-[color:var(--gold)]">Atelier of Luxury</p>
+            <p className="text-[11px] uppercase tracking-[0.3em] text-[color:var(--gold)]">{content.hero.eyebrow}</p>
             <h1 className="font-display text-4xl sm:text-5xl md:text-6xl leading-[1.05] mt-5 text-background">
-              Effortless elegance,
+              {content.hero.title}
               <br />
-              <span className="italic text-[color:var(--gold)]">curated for you.</span>
+              <span className="italic text-[color:var(--gold)]">{content.hero.highlight}</span>
             </h1>
             <div className="gold-underline mt-6" />
             <p className="mt-6 text-base md:text-lg text-background/86 max-w-md leading-relaxed">
-              Premium atamfa, lace, intimates, bags, shoes, veils and signature perfumes —
-              hand-picked, beautifully packaged, delivered to your door.
+              {content.hero.body}
             </p>
             <div className="mt-8 flex flex-wrap gap-3">
               <Link
                 to="/shop"
                 className="inline-flex items-center gap-2 bg-[color:var(--gold)] text-foreground px-7 py-3.5 text-sm uppercase tracking-[0.18em] hover:bg-[color:var(--gold)]/90 transition-colors"
               >
-                Shop Now <ArrowRight className="h-4 w-4" />
+                {content.hero.primaryLabel} <ArrowRight className="h-4 w-4" />
               </Link>
               <Link
                 to="/categories"
                 className="inline-flex items-center gap-2 border border-background/45 text-background px-7 py-3.5 text-sm uppercase tracking-[0.18em] hover:border-[color:var(--gold)] hover:text-[color:var(--gold)] transition-colors"
               >
-                View Collections
+                {content.hero.secondaryLabel}
               </Link>
             </div>
           </motion.div>
@@ -141,7 +149,7 @@ function Home() {
 
       {/* FEATURED CATEGORIES */}
       <section className="container-luxe py-20 md:py-28">
-        <SectionHeading eyebrow="Collections" title="Shop by category" subtitle="From handwoven atamfa to whisper-light veils — each piece chosen with intention." />
+        <SectionHeading eyebrow={content.collections.eyebrow} title={content.collections.title} subtitle={content.collections.subtitle} />
         <div className="mt-12 grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
           {categories.map((c, i) => (
             <motion.div
@@ -153,7 +161,7 @@ function Home() {
             >
               <Link to="/category/$slug" params={{ slug: c.slug }} className="group block">
                 <div className="relative aspect-square overflow-hidden bg-secondary">
-                  <img src={c.image} alt={c.name} loading="lazy" width={800} height={800} className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
+                  <img src={c.image} alt={c.name} loading="lazy" decoding="async" width={800} height={800} className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
                   <div className="absolute inset-0 bg-gradient-to-t from-foreground/50 via-transparent to-transparent opacity-90" />
                   <div className="absolute bottom-4 left-4 right-4 text-background">
                     <p className="font-display text-xl">{c.name}</p>
@@ -169,61 +177,59 @@ function Home() {
       {/* NEW ARRIVALS */}
       <section className="container-luxe py-16">
         <div className="flex items-end justify-between gap-6 flex-wrap">
-          <SectionHeading eyebrow="Fresh" title="New arrivals" align="left" />
+          <SectionHeading eyebrow={content.newArrivals.eyebrow} title={content.newArrivals.title} align="left" />
           <Link to="/shop" className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">
             View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {newArrivals.map((p, i) => <ProductCard key={p.id} product={p} index={i} showAddToCart />)}
+          {newArrivals.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
         </div>
       </section>
 
       {/* BEST SELLERS */}
       <section className="container-luxe py-16">
         <div className="flex items-end justify-between gap-6 flex-wrap">
-          <SectionHeading eyebrow="Loved" title="Best sellers" align="left" />
+          <SectionHeading eyebrow={content.bestSellers.eyebrow} title={content.bestSellers.title} align="left" />
           <Link to="/shop" className="text-sm text-primary inline-flex items-center gap-1 hover:gap-2 transition-all">
             View all <ArrowRight className="h-4 w-4" />
           </Link>
         </div>
         <div className="mt-10 grid grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
-          {bestSellers.map((p, i) => <ProductCard key={p.id} product={p} index={i} showAddToCart />)}
+          {bestSellers.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
         </div>
       </section>
 
       {/* WHY US */}
       <section className="bg-secondary mt-20 py-20">
         <div className="container-luxe">
-          <SectionHeading eyebrow="The Cove promise" title="Why customers stay" />
+          <SectionHeading eyebrow={content.promise.eyebrow} title={content.promise.title} />
           <div className="mt-14 grid sm:grid-cols-2 lg:grid-cols-4 gap-8">
-            {[
-              { icon: Gem, title: "Premium quality", body: "Sourced and inspected piece by piece." },
-              { icon: Sparkles, title: "Considered pricing", body: "Luxury that respects your budget." },
-              { icon: Truck, title: "Fast delivery", body: "Beautifully packaged, swiftly dispatched." },
-              { icon: ShieldCheck, title: "Trusted service", body: "Real people, real care, every order." },
-            ].map(({ icon: Icon, title, body }) => (
-              <div key={title} className="text-center">
-                <div className="mx-auto h-14 w-14 rounded-full border border-[color:var(--gold)] flex items-center justify-center text-primary">
-                  <Icon className="h-6 w-6" />
+            {content.promise.items.map(({ title, body }, index) => {
+              const Icon = [Gem, Sparkles, Truck, ShieldCheck][index % 4];
+              return (
+                <div key={title} className="text-center">
+                  <div className="mx-auto h-14 w-14 rounded-full border border-[color:var(--gold)] flex items-center justify-center text-primary">
+                    <Icon className="h-6 w-6" />
+                  </div>
+                  <h3 className="font-display text-xl mt-5">{title}</h3>
+                  <p className="text-sm text-muted-foreground mt-2">{body}</p>
                 </div>
-                <h3 className="font-display text-xl mt-5">{title}</h3>
-                <p className="text-sm text-muted-foreground mt-2">{body}</p>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </section>
 
       {/* PRODUCT VIDEOS */}
       <section className="container-luxe py-20 md:py-24">
-        <SectionHeading eyebrow="Product videos" title="See the details in motion" subtitle="Short product clips for texture, scale and finish before you order." />
+        <SectionHeading eyebrow={content.videos.eyebrow} title={content.videos.title} subtitle={content.videos.subtitle} />
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
           {[
-            { src: productVideo01, title: "Product showcase" },
-            { src: productVideo02, title: "Close-up details" },
-            { src: productVideo03, title: "New product clip" },
-            { src: productVideo04, title: "Style preview" },
+            { src: productVideo01, title: content.videos.captions[0] ?? "Product showcase" },
+            { src: productVideo02, title: content.videos.captions[1] ?? "Close-up details" },
+            { src: productVideo03, title: content.videos.captions[2] ?? "New product clip" },
+            { src: productVideo04, title: content.videos.captions[3] ?? "Style preview" },
           ].map((video, i) => (
             <motion.figure
               key={video.src}
@@ -249,14 +255,10 @@ function Home() {
 
       {/* TESTIMONIALS */}
       <section className="container-luxe py-20 md:py-28">
-        <SectionHeading eyebrow="Kind words" title="From our community" />
+        <SectionHeading eyebrow={content.testimonials.eyebrow} title={content.testimonials.title} />
         <div className="mt-12 overflow-hidden">
           <div className="review-marquee flex w-max gap-6">
-          {[
-            { name: "Adaeze O.", text: "The atamfa was even more beautiful in person. Tailor's eyes lit up." },
-            { name: "Ifeoma N.", text: "Packaging felt like a gift to myself. Will buy again — already have." },
-            { name: "Zainab A.", text: "Cove Noir is now my signature scent. Compliments every single day." },
-          ].map((t) => (
+          {content.testimonials.items.map((t) => (
             <figure key={t.name} className="w-[18rem] shrink-0 bg-secondary p-8 md:w-[24rem]">
               <p className="font-display text-xl leading-snug">“{t.text}”</p>
               <figcaption className="mt-6 text-xs uppercase tracking-[0.22em] text-primary">— {t.name}</figcaption>
@@ -268,11 +270,11 @@ function Home() {
 
       {/* INSTAGRAM */}
       <section className="container-luxe pb-20">
-        <SectionHeading eyebrow="@thefashioncove" title="Follow the atelier" subtitle="Daily inspiration, fresh arrivals and behind-the-scenes." />
+        <SectionHeading eyebrow={content.instagram.eyebrow} title={content.instagram.title} subtitle={content.instagram.subtitle} />
         <div className="mt-10 grid grid-cols-3 md:grid-cols-6 gap-2">
           {categories.slice(0, 6).map((c) => (
-            <a key={c.slug} href="https://instagram.com" aria-label={`Instagram — ${c.name}`} className="relative group aspect-square overflow-hidden bg-secondary">
-              <img src={c.image} alt="" loading="lazy" className="size-full object-cover group-hover:scale-105 transition-transform duration-500" />
+            <a key={c.slug} href={content.instagram.url} aria-label={`Instagram - ${c.name}`} className="relative group aspect-square overflow-hidden bg-secondary">
+              <img src={c.image} alt="" loading="lazy" decoding="async" className="size-full object-cover group-hover:scale-105 transition-transform duration-500" />
               <div className="absolute inset-0 bg-foreground/0 group-hover:bg-foreground/30 transition-colors flex items-center justify-center">
                 <Instagram className="h-6 w-6 text-background opacity-0 group-hover:opacity-100 transition-opacity" />
               </div>
@@ -284,12 +286,12 @@ function Home() {
       {/* NEWSLETTER */}
       <section className="bg-primary text-primary-foreground py-16">
         <div className="container-luxe max-w-2xl text-center">
-          <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--gold)]">The list</p>
-          <h2 className="font-display text-3xl md:text-4xl mt-3">First looks, private pricing</h2>
-          <p className="mt-4 text-primary-foreground/80">Subscribe for new drops, restocks and members-only offers.</p>
+          <p className="text-[11px] uppercase tracking-[0.28em] text-[color:var(--gold)]">{content.newsletter.eyebrow}</p>
+          <h2 className="font-display text-3xl md:text-4xl mt-3">{content.newsletter.title}</h2>
+          <p className="mt-4 text-primary-foreground/80">{content.newsletter.body}</p>
           <form
             className="mt-7 flex flex-col sm:flex-row gap-3 max-w-md mx-auto"
-            onSubmit={(e) => { e.preventDefault(); alert("Thank you — you're on the list."); }}
+            onSubmit={(e) => { e.preventDefault(); alert(content.newsletter.successMessage); }}
           >
             <input
               type="email"
@@ -298,7 +300,7 @@ function Home() {
               className="flex-1 bg-background/10 border border-background/30 px-4 py-3 text-sm placeholder:text-primary-foreground/60 focus:outline-none focus:border-[color:var(--gold)]"
             />
             <button className="bg-[color:var(--gold)] text-foreground px-6 py-3 text-sm uppercase tracking-[0.18em] hover:opacity-90 transition-opacity">
-              Join
+              {content.newsletter.buttonLabel}
             </button>
           </form>
         </div>

@@ -1,13 +1,13 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
-import { categories, productsByCategory, type CategorySlug } from "@/lib/shop-data";
 import { ProductCard } from "@/components/ProductCard";
 import { ArrowLeft } from "lucide-react";
+import { getStorefrontCategory } from "@/lib/storefront-api";
 
 export const Route = createFileRoute("/category/$slug")({
-  loader: ({ params }) => {
-    const cat = categories.find((c) => c.slug === params.slug);
-    if (!cat) throw notFound();
-    return { category: cat, products: productsByCategory(params.slug as CategorySlug) };
+  loader: async ({ params }) => {
+    const data = await getStorefrontCategory(params.slug);
+    if (!data) throw notFound();
+    return data;
   },
   head: ({ loaderData }) => {
     const c = loaderData?.category;
@@ -52,7 +52,7 @@ function CategoryPage() {
             <p className="mt-5 text-muted-foreground max-w-md">{category.blurb}</p>
           </div>
           <div className="aspect-[4/3] overflow-hidden">
-            <img src={category.image} alt={category.name} width={800} height={600} className="size-full object-cover" />
+            <img src={category.image} alt={category.name} width={800} height={600} decoding="async" fetchPriority="high" className="size-full object-cover" />
           </div>
         </div>
       </section>

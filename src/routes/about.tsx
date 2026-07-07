@@ -29,7 +29,7 @@ function AboutPage() {
           </p>
         </div>
         <div className="aspect-[4/5] overflow-hidden">
-          <img src={heroImg} alt="The Fashion Cove" width={800} height={1000} className="size-full object-cover" />
+          <img src={heroImg} alt="The Fashion Cove" width={800} height={1000} decoding="async" fetchPriority="high" className="size-full object-cover" />
         </div>
       </section>
 

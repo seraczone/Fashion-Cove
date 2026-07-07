@@ -1,8 +1,13 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { categories } from "@/lib/shop-data";
 import { SectionHeading } from "@/components/SectionHeading";
+import { getStorefrontCatalog, storefrontKeys } from "@/lib/storefront-api";
 
 export const Route = createFileRoute("/categories")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: storefrontKeys.catalog,
+      queryFn: getStorefrontCatalog,
+    }),
   head: () => ({
     meta: [
       { title: "Collections — The Fashion Cove" },
@@ -15,6 +20,8 @@ export const Route = createFileRoute("/categories")({
 });
 
 function CategoriesPage() {
+  const { categories } = Route.useLoaderData();
+
   return (
     <div className="container-luxe py-12 md:py-16">
       <SectionHeading eyebrow="Collections" title="Browse by category" subtitle="Seven worlds, one atelier. Step into yours." />
@@ -22,7 +29,7 @@ function CategoriesPage() {
         {categories.map((c) => (
           <Link key={c.slug} to="/category/$slug" params={{ slug: c.slug }} className="group block">
             <div className="relative aspect-[4/5] overflow-hidden bg-secondary">
-              <img src={c.image} alt={c.name} loading="lazy" width={800} height={1000} className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <img src={c.image} alt={c.name} loading="lazy" decoding="async" width={800} height={1000} className="size-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute inset-0 bg-gradient-to-t from-foreground/60 via-foreground/10 to-transparent" />
               <div className="absolute bottom-6 left-6 right-6 text-background">
                 <p className="font-display text-2xl">{c.name}</p>

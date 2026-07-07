@@ -3,8 +3,14 @@ import { useState } from "react";
 import { MessageCircle, Check } from "lucide-react";
 import { useCart, useCartDetails } from "@/lib/cart-store";
 import { formatNGN, whatsappLink } from "@/lib/shop-data";
+import { getStorefrontCatalog, storefrontKeys } from "@/lib/storefront-api";
 
 export const Route = createFileRoute("/checkout")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: storefrontKeys.catalog,
+      queryFn: getStorefrontCatalog,
+    }),
   head: () => ({
     meta: [
       { title: "Checkout — The Fashion Cove" },
@@ -15,7 +21,8 @@ export const Route = createFileRoute("/checkout")({
 });
 
 function CheckoutPage() {
-  const { items, total } = useCartDetails();
+  const { products } = Route.useLoaderData();
+  const { items, total } = useCartDetails(products);
   const clear = useCart((s) => s.clear);
   const navigate = useNavigate();
   const [submitted, setSubmitted] = useState(false);

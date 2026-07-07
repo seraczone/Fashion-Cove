@@ -1,7 +1,8 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { Search } from "lucide-react";
-import { categories, products, type CategorySlug } from "@/lib/shop-data";
+import type { CategorySlug } from "@/lib/shop-data";
+import { getStorefrontCatalog, storefrontKeys } from "@/lib/storefront-api";
 import { ProductCard } from "@/components/ProductCard";
 import { SectionHeading } from "@/components/SectionHeading";
 
@@ -9,6 +10,11 @@ type SortKey = "latest" | "asc" | "desc";
 type FilterKey = "all" | "new" | "best";
 
 export const Route = createFileRoute("/shop")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: storefrontKeys.catalog,
+      queryFn: getStorefrontCatalog,
+    }),
   head: () => ({
     meta: [
       { title: "Shop — The Fashion Cove" },
@@ -21,6 +27,7 @@ export const Route = createFileRoute("/shop")({
 });
 
 function Shop() {
+  const { categories, products } = Route.useLoaderData();
   const [q, setQ] = useState("");
   const [cat, setCat] = useState<CategorySlug | "all">("all");
   const [sort, setSort] = useState<SortKey>("latest");
@@ -121,7 +128,7 @@ function Shop() {
             </div>
           ) : (
             <div className="grid grid-cols-2 lg:grid-cols-3 gap-6 md:gap-8">
-              {list.map((p, i) => <ProductCard key={p.id} product={p} index={i} showAddToCart />)}
+              {list.map((p, i) => <ProductCard key={p.id} product={p} index={i} />)}
             </div>
           )}
         </div>

@@ -1,6 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { findProduct } from "./shop-data";
+import { findProduct, products, type Product } from "./shop-data";
 
 export interface CartItem {
   productId: string;
@@ -45,11 +45,11 @@ export const useCart = create<CartState>()(
   ),
 );
 
-export function useCartDetails() {
+export function useCartDetails(source: Product[] = products) {
   const items = useCart((s) => s.items);
   const detailed = items
     .map((i) => {
-      const p = findProduct(i.productId);
+      const p = findProduct(i.productId, source);
       return p ? { product: p, qty: i.qty, subtotal: p.price * i.qty } : null;
     })
     .filter((x): x is { product: NonNullable<ReturnType<typeof findProduct>>; qty: number; subtotal: number } => x !== null);

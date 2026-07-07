@@ -19,12 +19,14 @@ export function Navbar() {
 
   return (
     <header className="sticky top-0 z-50 bg-background/85 backdrop-blur-md border-b border-border">
-      <div className="container-luxe flex items-center justify-between h-24 md:h-32">
+      <div className="container-luxe flex items-center justify-between h-16 md:h-20">
         <Link to="/" className="flex items-center" onClick={() => setOpen(false)}>
           <img
             src={brandLogo}
             alt={BRAND}
-            className="h-20 w-auto md:h-28"
+            decoding="async"
+            fetchPriority="high"
+            className="h-14 w-auto md:h-16"
             width={1024}
             height={1024}
           />
@@ -35,6 +37,7 @@ export function Navbar() {
             <Link
               key={n.to}
               to={n.to}
+              preload="intent"
               activeOptions={{ exact: n.to === "/" }}
               className="text-sm tracking-wide text-foreground/80 hover:text-primary transition-colors"
               activeProps={{ className: "text-primary" }}
@@ -74,6 +77,7 @@ export function Navbar() {
               <Link
                 key={n.to}
                 to={n.to}
+                preload="intent"
                 onClick={() => setOpen(false)}
                 activeOptions={{ exact: n.to === "/" }}
                 className="py-3 text-base text-foreground/80"

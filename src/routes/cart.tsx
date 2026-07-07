@@ -2,8 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Trash2, ArrowRight, ShoppingBag } from "lucide-react";
 import { useCart, useCartDetails } from "@/lib/cart-store";
 import { formatNGN } from "@/lib/shop-data";
+import { getStorefrontCatalog, storefrontKeys } from "@/lib/storefront-api";
 
 export const Route = createFileRoute("/cart")({
+  loader: ({ context }) =>
+    context.queryClient.ensureQueryData({
+      queryKey: storefrontKeys.catalog,
+      queryFn: getStorefrontCatalog,
+    }),
   head: () => ({
     meta: [
       { title: "Your Cart — The Fashion Cove" },
@@ -14,7 +20,8 @@ export const Route = createFileRoute("/cart")({
 });
 
 function CartPage() {
-  const { items, total } = useCartDetails();
+  const { products } = Route.useLoaderData();
+  const { items, total } = useCartDetails(products);
   const setQty = useCart((s) => s.setQty);
   const remove = useCart((s) => s.remove);
 
@@ -43,7 +50,7 @@ function CartPage() {
           {items.map(({ product, qty, subtotal }) => (
             <li key={product.id} className="py-6 flex gap-5">
               <Link to="/product/$id" params={{ id: product.id }} className="shrink-0 w-24 sm:w-28 aspect-[4/5] bg-secondary overflow-hidden">
-                <img src={product.image} alt={product.name} className="size-full object-cover" />
+                <img src={product.image} alt={product.name} loading="lazy" decoding="async" className="size-full object-cover" />
               </Link>
               <div className="flex-1 flex flex-col">
                 <div className="flex justify-between gap-4">
