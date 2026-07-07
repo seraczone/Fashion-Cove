@@ -1,7 +1,7 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { useState } from "react";
-import { ShoppingBag, MessageCircle, Check, ArrowLeft } from "lucide-react";
-import { formatNGN, categoryName, whatsappLink } from "@/lib/shop-data";
+import { ShoppingBag, Check, ArrowLeft } from "lucide-react";
+import { formatNGN, categoryName } from "@/lib/shop-data";
 import { getStorefrontCatalog } from "@/lib/storefront-api";
 import { useCart } from "@/lib/cart-store";
 import { ProductCard } from "@/components/ProductCard";
@@ -54,7 +54,7 @@ function ProductPage() {
     setTimeout(() => setAdded(false), 1800);
   };
 
-  const waMessage = `Hello The Fashion Cove! I'd like to order:\n\n• ${product.name}\n• Qty: ${qty}\n• Price: ${formatNGN(product.price * qty)}\n\nIs this available?`;
+  
 
   return (
     <div className="container-luxe py-10 md:py-14">
@@ -103,14 +103,7 @@ function ProductPage() {
             >
               {added ? <><Check className="h-4 w-4" /> Added</> : <><ShoppingBag className="h-4 w-4" /> Add to cart</>}
             </button>
-            <a
-              href={whatsappLink(waMessage)}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="inline-flex items-center justify-center gap-2 border border-foreground/20 px-7 py-3.5 text-sm uppercase tracking-[0.18em] hover:border-primary hover:text-primary transition-colors"
-            >
-              <MessageCircle className="h-4 w-4" /> Order on WhatsApp
-            </a>
+            {/* WhatsApp order button removed per request; only Add to cart remains */}
           </div>
 
           <div className="mt-10 pt-6 border-t border-border text-sm text-muted-foreground space-y-2">
