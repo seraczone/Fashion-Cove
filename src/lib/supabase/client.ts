@@ -5,8 +5,14 @@ const supabaseUrl = import.meta.env.VITE_SUPABASE_URL as string | undefined;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY as string | undefined;
 const isBrowser = typeof window !== "undefined";
 
-if (!supabaseUrl || !supabaseAnonKey) {
-  throw new Error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY.");
+const missingEnv = !supabaseUrl || !supabaseAnonKey;
+if (missingEnv) {
+  // Avoid throwing at module-evaluation time (which causes 500s on SSR/build).
+  // Export a proxy that throws when used so the app fails with a clearer runtime error
+  // only at the point of Supabase usage.
+  // This helps deployments that forgot to set env vars recover the server rather than returning 500s.
+  // eslint-disable-next-line no-console
+  console.error("Missing VITE_SUPABASE_URL or VITE_SUPABASE_ANON_KEY. Supabase client not configured.");
 }
 
 class ServerNoopWebSocket {
@@ -49,11 +55,31 @@ class ServerNoopWebSocket {
   }
 }
 
-export const supabase = createClient<Database>(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: isBrowser,
-    autoRefreshToken: isBrowser,
-    detectSessionInUrl: isBrowser,
-  },
-  realtime: isBrowser ? undefined : { transport: ServerNoopWebSocket as unknown as typeof WebSocket },
-});
+let supabaseExport: any;
+if (missingEnv) {
+  const handler: ProxyHandler<any> = {
+    get() {
+      throw new Error(
+        "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment before starting the app."
+      );
+    },
+    apply() {
+      throw new Error(
+        "Supabase is not configured. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY in your environment before starting the app."
+      );
+    },
+  };
+  // Proxy for any property access / call on the supabase client
+  supabaseExport = new Proxy({}, handler);
+} else {
+  supabaseExport = createClient<Database>(supabaseUrl as string, supabaseAnonKey as string, {
+    auth: {
+      persistSession: isBrowser,
+      autoRefreshToken: isBrowser,
+      detectSessionInUrl: isBrowser,
+    },
+    realtime: isBrowser ? undefined : { transport: ServerNoopWebSocket as unknown as typeof WebSocket },
+  });
+}
+
+export const supabase = supabaseExport;
